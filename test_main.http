@@ -1,0 +1,11 @@
+# Test your FastAPI endpoints
+
+POST http://127.0.0.1:8080/
+Accept: application/json
+
+###
+
+POST http://127.0.0.1:8080/sign/signup
+Accept: application/json
+
+###

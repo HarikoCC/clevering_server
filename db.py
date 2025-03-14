@@ -42,7 +42,7 @@ class UserStatus(Base):
     hrv = Column(INTEGER, primary_key=False, nullable=True)
     blood_oxygen = Column(INTEGER, primary_key=False, nullable=True)
     concentration = Column(INTEGER, primary_key=False, nullable=True)
-    modify_time = Column(DATETIME, primary_key=False, nullable=True)
+    timestamp = Column(DATETIME, primary_key=False, nullable=True)
 
 
 # 用户状态日志表

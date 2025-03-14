@@ -4,12 +4,12 @@ from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
-from server import user_sign
+from server import user_manager
 
 from utils import getMsTime
 
 app = FastAPI()
-app.include_router(user_sign.router)
+app.include_router(user_manager.router)
 
 origins = [
     "*"

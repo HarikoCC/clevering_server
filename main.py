@@ -1,15 +1,37 @@
+import platform
+
 from fastapi import FastAPI
 from datetime import datetime
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
-from server import user_manager
+from server import user_manager, user_status, file_manager
 
 from utils import getMsTime
 
+from const import FILE_PATH_WIN, FILE_PATH_MAC, FILE_PATH_LINUX
+
+
+def check_system_type():
+    system_type = platform.system()
+    if system_type == "Windows":
+        return FILE_PATH_WIN
+    elif system_type == "Darwin":
+        return FILE_PATH_MAC
+    elif system_type == "Linux":
+        return FILE_PATH_LINUX
+    else:
+        raise RuntimeError(f"Unsupported operating system: {system_type}")
+
+
 app = FastAPI()
+
+PATH = check_system_type()
+
 app.include_router(user_manager.router)
+app.include_router(user_status.router)
+app.include_router(file_manager.router)
 
 origins = [
     "*"
@@ -48,4 +70,3 @@ async def request_validation_error(request, exc):
         "timestamp": getMsTime(datetime.now())
     }, status_code=exc.status_code)
     return response
-

@@ -8,3 +8,6 @@ NACOS_addr = ''  # nacos的address
 NACOS_namespace = "dev"  # 命名空间，必须是dev
 Redis_addr = ''  # redis的address
 Redis_pass = 'clevering'  # redis 密码
+FILE_PATH_WIN = "C:/Clevering/CloudFiles/"  # WINDOWS文件目录前缀
+FILE_PATH_MAC = "/Users/Clevering/CloudFiles/"  # MAC文件目录前缀
+FILE_PATH_LINUX = "/home/Clevering/CloudFiles/"  # LINUX文件目录前缀

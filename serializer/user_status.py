@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from fastapi.openapi.models import Schema
 from pydantic import BaseModel
 
 from db import StatusRecord

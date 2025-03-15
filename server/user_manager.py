@@ -9,6 +9,7 @@ router = APIRouter(
 )
 
 
+# 用户注册
 @router.post("/signup")
 async def signup(data: UserInfo):
     db = UserModel()
@@ -19,6 +20,7 @@ async def signup(data: UserInfo):
     return NormalResponse(code=0, message="用户注册成功", data="用户注册成功")
 
 
+# 用户登录
 @router.post("/signin")
 async def signin(data: UserSignIn):
     db = UserModel()
@@ -33,16 +35,18 @@ async def signin(data: UserSignIn):
     return NormalResponse(code=0, message="用户登录成功")
 
 
+# 获取用户信息
 @router.get("/info")
-async def info(id: int):
+async def info(uid: int):
     db = UserModel()
-    result = db.get_info_by_id(id)
+    result = db.get_info_by_id(uid)
     if result is None:
         return NormalResponse(code=0, message="信息获取失败", data="用户不存在")
     else:
         return DictResponse(code=0, message="信息获取成功", data=user_info_dict(result))
 
 
+# 更新用户信息
 @router.post("/update")
 async def update(data: UserInfo):
     db = UserModel()
@@ -53,6 +57,7 @@ async def update(data: UserInfo):
     return NormalResponse(code=0, message="用户修改成功")
 
 
+# 删除用户
 @router.post("/delete")
 async def delete(data: UserDelete):
     db = UserModel()
@@ -60,5 +65,5 @@ async def delete(data: UserDelete):
     if result is None:
         return NormalResponse(code=0, message="用户删除失败", data="用户不存在")
     if result.user_password == data.user_password:
-        db.delete_by_id(data.id)
+        db.delete_by_id(data.uid)
         return NormalResponse(code=0, message="用户删除成功")

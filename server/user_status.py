@@ -26,9 +26,9 @@ async def update(data: UserStatus):
 
 # 获取用户最新状态
 @router.get("/status")
-async def status(id: int):
+async def status(uid: int):
     db = UserStatusModel()
-    result = db.get_status(id)
+    result = db.get_status(uid)
     if result is None:
         return NormalResponse(code=0, message="查询失败", data="无该用户信息")
     return NormalResponse(code=0, message="查询成功", data=user_status_dict(result))

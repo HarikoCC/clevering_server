@@ -61,7 +61,7 @@ class StatusRecord(Base):
 class FileInformation(Base):
     __tablename__ = 'file_info'
     file_id = Column(INTEGER, primary_key=True, nullable=False, autoincrement=True)
-    file_name = Column(TEXT, primary_key=False, nullable=False, index=True)
+    file_name = Column(TEXT, primary_key=False, nullable=False)
     user_id = Column(BIGINT, primary_key=True, nullable=False)
     file_path = Column(TEXT, primary_key=False, nullable=False)
     create_time = Column(DATETIME, primary_key=False, nullable=False)

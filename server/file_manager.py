@@ -1,17 +1,13 @@
 import os
-import platform
 from datetime import datetime
 
 from fastapi import APIRouter, File, UploadFile
-from pydantic import BaseModel
 from starlette.responses import FileResponse
 
-from db import FileInformation
-from main import PATH
 from model.file_manager import FileModel
-from model.user_info import UserModel
 from serializer.file_manager import file_dict_list, all_file_dict_list, create_file_dict
 from serializer.response import ListResponse, NormalResponse
+from utils import get_path
 
 router = APIRouter(
     prefix="/file"
@@ -53,7 +49,8 @@ async def listall():
 async def create(uid: int, file: UploadFile = File(...)):
     db = FileModel()
     file_name = file.filename
-    path = os.path.join(PATH + str(uid),
+
+    path = os.path.join(get_path() + str(uid),
                         datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                         file_name)
 

@@ -67,3 +67,4 @@ async def delete(data: UserDelete):
     if result.user_password == data.user_password:
         db.delete_by_id(data.uid)
         return NormalResponse(code=0, message="用户删除成功")
+    

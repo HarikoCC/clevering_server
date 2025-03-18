@@ -69,17 +69,26 @@ class FileInformation(Base):
 
 
 # 用户组表
+class GroupInformation(Base):
+    __tablename__ = 'group_info'
+    group_id = Column(INTEGER, primary_key=False, nullable=False, index=True)
+    group_name = Column(TEXT, primary_key=False, nullable=False)
+    group_note = Column(TEXT, primary_key=False, nullable=True)
+
+
 class UserGroup(Base):
     __tablename__ = 'user_group'
-    group_id = Column(INTEGER, primary_key=True, nullable=False, index=True)
-    group_name = Column(TEXT, primary_key=False, nullable=False)
+    user_group_id = Column(BIGINT, primary_key=True, nullable=False, autoincrement=True)
     user_id = Column(BIGINT, primary_key=False, nullable=False, index=True)
+    group_id = Column(INTEGER, primary_key=False, nullable=False, index=True)
+    user_identity = Column(INTEGER, primary_key=False, nullable=False)
 
 
 # 文件授权表
 class FileGroup(Base):
     __tablename__ = 'file_group'
-    file_id = Column(INTEGER, primary_key=True, nullable=False)
+    file_group_id = Column(BIGINT, primary_key=True, nullable=False, autoincrement=True)
+    file_id = Column(INTEGER, primary_key=False, nullable=False)
     group_id = Column(INTEGER, primary_key=False, nullable=False, index=True)
     permission = Column(INTEGER, primary_key=False, nullable=True)
 

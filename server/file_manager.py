@@ -108,3 +108,10 @@ async def download(fid: int):
         return FileResponse(result.file_path, filename=result.file_name)
     except Exception as e:
         return NormalResponse(code=0, message="文件下载失败", data=str(e))
+
+
+
+# 根据用户组列出文件
+
+
+# 根据用户组

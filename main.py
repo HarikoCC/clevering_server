@@ -6,7 +6,7 @@ from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
-from server import user_manager, user_status, file_manager
+from server import user_manager, user_status, file_manager, user_group
 from utils import get_ms_time, check_system
 
 check_system()
@@ -16,6 +16,7 @@ app = FastAPI()
 app.include_router(user_manager.router)
 app.include_router(user_status.router)
 app.include_router(file_manager.router)
+app.include_router(user_group.router)
 
 origins = [
     "*"

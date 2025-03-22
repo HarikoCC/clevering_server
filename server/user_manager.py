@@ -1,8 +1,11 @@
-from fastapi import APIRouter
+import uuid
 
-from model.user_info import UserModel
+from fastapi import APIRouter, Depends
+
+from model.user_manager import UserModel, UserRedisModel
 from serializer.response import NormalResponse, DictResponse
 from serializer.user_manager import UserInfo, user_info_dict, UserSignIn, UserDelete
+from utils import verify_token
 
 router = APIRouter(
     prefix="/user"
@@ -24,6 +27,7 @@ async def signup(data: UserInfo):
 @router.post("/signin")
 async def signin(data: UserSignIn):
     db = UserModel()
+    rds = UserRedisModel()
     if data.sign_in_mode == 0:
         result = db.get_info_by_id(data.user_info)
     else:
@@ -32,12 +36,18 @@ async def signin(data: UserSignIn):
         return NormalResponse(code=0, message="用户登录失败", data="用户不存在")
     if result.user_password != data.user_password:
         return NormalResponse(code=0, message="用户登录失败", data="密码错误")
-    return NormalResponse(code=0, message="用户登录成功")
+
+    if rds.exist_user(result.user_id):
+        rds.delete_token(result.user_id)
+
+    new_token = str(uuid.uuid4())
+    rds.set_token(result.user_id, new_token)
+    return NormalResponse(code=0, message="用户登录成功", data=new_token)
 
 
 # 获取用户信息
 @router.get("/info")
-async def info(uid: int):
+async def info(uid: int, _: bool = Depends(verify_token)):
     db = UserModel()
     result = db.get_info_by_id(uid)
     if result is None:
@@ -48,7 +58,7 @@ async def info(uid: int):
 
 # 更新用户信息
 @router.post("/update")
-async def update(data: UserInfo):
+async def update(data: UserInfo, _: bool = Depends(verify_token)):
     db = UserModel()
     result = db.get_info_by_id(data.user_id)
     if result is not None:
@@ -59,9 +69,11 @@ async def update(data: UserInfo):
 
 # 删除用户
 @router.post("/delete")
-async def delete(data: UserDelete):
+async def delete(data: UserDelete, _: bool = Depends(verify_token)):
     db = UserModel()
+    rds = UserRedisModel()
     result = db.get_info_by_id(data.user_id)
+    rds.delete_token(data.user_id)
     if result is None:
         return NormalResponse(code=0, message="用户删除失败", data="用户不存在")
     if result.user_password == data.user_password:

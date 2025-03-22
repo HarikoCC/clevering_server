@@ -71,7 +71,7 @@ class FileInformation(Base):
 # 用户组表
 class GroupInformation(Base):
     __tablename__ = 'group_info'
-    group_id = Column(INTEGER, primary_key=False, nullable=False, index=True)
+    group_id = Column(INTEGER, primary_key=True, nullable=False, index=True)
     group_name = Column(TEXT, primary_key=False, nullable=False)
     group_note = Column(TEXT, primary_key=False, nullable=True)
 
@@ -93,12 +93,11 @@ class FileGroup(Base):
     permission = Column(INTEGER, primary_key=False, nullable=True)
 
 
-link = f"mysql+pymysql://{Mysql_user}:{Mysql_pass}@{Mysql_addr}/{Mysql_db}"
-
+sqlLink = f"mysql+pymysql://{Mysql_user}:{Mysql_pass}@{Mysql_addr}/{Mysql_db}"
 
 def init_db():
     engine = create_engine(
-        link,
+        sqlLink,
         echo=True
     )
     Base.metadata.create_all(engine)
@@ -106,7 +105,7 @@ def init_db():
 
 class DbSession:
     def __init__(self):
-        engine = create_engine(link)
+        engine = create_engine(sqlLink)
         DBSession = sessionmaker(bind=engine)
         self.session = DBSession()
 

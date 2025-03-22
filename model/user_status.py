@@ -1,4 +1,7 @@
+import json
+
 from db import DbSession, UserStatus, StatusRecord
+from rds import RedisSession
 
 
 class UserStatusModel(DbSession):
@@ -45,3 +48,15 @@ class UserStatusModel(DbSession):
             StatusRecord.timestamp <= data["end_time"]
         ).delete()
         self.session.commit()
+
+
+class UserStatusRedisModel(RedisSession):
+    def status_exist(self, uid: int):
+        return self.rds.hexists("user_status", str(uid))
+
+    def get_status(self, uid: int):
+        data = self.rds.hget("user_status", str(uid))
+        return json.loads(data) if data else []
+
+    def set_status(self, uid: int, data: dict):
+        self.rds.hset("user_status", str(uid), json.dumps(data))

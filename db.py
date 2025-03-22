@@ -1,4 +1,5 @@
 from sqlalchemy import Column, create_engine, DATETIME, BIGINT, Integer as INTEGER, String as TEXT, TEXT
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 from const import Mysql_addr, Mysql_user, Mysql_pass, Mysql_db
@@ -104,16 +105,19 @@ def init_db():
 
 
 class DbSession:
-    def __init__(self):
-        engine = create_engine(sqlLink)
-        DBSession = sessionmaker(bind=engine)
-        self.session = DBSession()
+        def __init__(self):
+            self.engine = create_async_engine(sqlLink)
+            self.session = async_sessionmaker(
+                bind=self.engine,
+                class_=AsyncSession,
+                expire_on_commit=False
+            )
 
-    def get_session(self):
-        return self.session
+        async def get_session(self) -> AsyncSession:
+            return self.session()
 
-    def __del__(self):
-        self.session.close()
+        async def close(self):
+            await self.engine.dispose()
 
 
 if __name__ == "__main__":

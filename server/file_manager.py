@@ -22,7 +22,7 @@ async def list(uid: int, _: bool = Depends(verify_token)):
     if rds.user_file_list_exist(uid):
         result = rds.get_user_file_list(uid)
     else:
-        result = db.get_file_list(uid)
+        result = await db.get_file_list(uid)
     if result is None:
         return NormalResponse(code=0, message="获取失败", data="该用户无文件")
 
@@ -39,7 +39,7 @@ async def listname(fname: str, _: bool = Depends(verify_token)):
     if rds.name_file_list_exist(fname):
         result = rds.get_name_file_list(fname)
     else:
-        result = db.get_file_list_by_name(fname)
+        result = await db.get_file_list_by_name(fname)
     if result is None:
         return NormalResponse(code=0, message="获取失败", data="无该名称文件")
 
@@ -52,7 +52,7 @@ async def listname(fname: str, _: bool = Depends(verify_token)):
 @router.get("/listall")
 async def listall(_: bool = Depends(verify_token)):
     db = FileModel()
-    result = db.get_all_file_list()
+    result = await db.get_all_file_list()
     if result is None:
         return NormalResponse(code=0, message="获取失败", data="文件库无文件")
     return ListResponse(code=0, message="获取成功", data=all_file_dict_list(result))
@@ -77,7 +77,7 @@ async def create(uid: int, file: UploadFile = File(...), _: bool = Depends(verif
     except Exception as e:
         return NormalResponse(code=0, detail="文件上传失败", data=str(e))
 
-    db.create_file(create_file_dict([uid, file_name, path]))
+    await db.create_file(create_file_dict([uid, file_name, path]))
     rds.delete_list_hash()
     return NormalResponse(code=0, message="文件上传成功")
 
@@ -90,10 +90,10 @@ async def delete(fid: int, _: bool = Depends(verify_token)):
     if rds.info_exist(fid):
         result = rds.get_info(fid)
     else:
-        result = db.get_file_info(fid)
+        result = await db.get_file_info(fid)
     path = result.file_path
     os.remove(path)
-    db.delete_file(fid)
+    await db.delete_file(fid)
     rds.delete_list_hash()
     rds.delete_info(fid)
     return NormalResponse(code=0, message="文件已删除")
@@ -107,7 +107,7 @@ async def update(fid: int, file: UploadFile = File(...), _: bool = Depends(verif
     if rds.info_exist(fid):
         result = rds.get_info(fid)
     else:
-        result = db.get_file_info(fid)
+        result = await db.get_file_info(fid)
     if result is None:
         return NormalResponse(code=0, message="文件更新失败", data="文件不存在")
 
@@ -119,10 +119,10 @@ async def update(fid: int, file: UploadFile = File(...), _: bool = Depends(verif
                 buffer.write(chunk)
     except Exception as e:
         return NormalResponse(code=0, message="文件更新失败", data=str(e))
-    db.update_file(fid, datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+    await db.update_file(fid, datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
     rds.delete_info(fid)
 
-    result = db.get_file_info(fid)
+    result = await db.get_file_info(fid)
     if not rds.info_exist(fid):
         rds.set_info(fid, result)
     return NormalResponse(code=0, message="文件更新成功")
@@ -136,7 +136,7 @@ async def download(fid: int, _: bool = Depends(verify_token)):
     if rds.info_exist(fid):
         result = rds.get_info(fid)
     else:
-        result = db.get_file_info(fid)
+        result = await db.get_file_info(fid)
     if result is None:
         return NormalResponse(code=0, message="文件下载失败", data="文件不存在")
     if not rds.info_exist(fid):

@@ -51,4 +51,3 @@ class UserRedisModel(RedisSession):
     def delete_token(self, uid: int):
         tid = "user:" + str(uid)
         self.rds.delete(tid)
-

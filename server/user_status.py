@@ -18,9 +18,9 @@ async def update(data: UserStatus, _: bool = Depends(verify_token)):
     db = UserStatusModel()
     rds = UserStatusRedisModel()
 
-    result = await rds.status_exist(data.user_id)
+    result = rds.status_exist(data.user_id)
     await db.add_record(user_status_dict(data))
-    await rds.set_status(data.user_id, user_status_dict(data))
+    rds.set_status(data.user_id, user_status_dict(data))
 
     if result is None:
         return NormalResponse(code=0, message="状态更新成功", data="已添加新状态")
@@ -31,7 +31,7 @@ async def update(data: UserStatus, _: bool = Depends(verify_token)):
 @router.get("/status")
 async def status(uid: int, _: bool = Depends(verify_token)):
     rds = UserStatusRedisModel()
-    result = await rds.get_status(uid)
+    result = rds.get_status(uid)
 
     if result is None:
         return NormalResponse(code=0, message="查询失败", data="无该用户最新信息")
@@ -60,10 +60,9 @@ async def delete(data: FindRecord, _: bool = Depends(verify_token)):
     rds = UserStatusRedisModel()
     if data.mode == 0:
         await db.delete_record(data.user_id)
-        await rds.rds.hdel("user_status", str(data.user_id))
+        rds.rds.hdel("user_status", str(data.user_id))
     else:
         records_to_delete = await db.get_record_by_time(record_time_dict(data))
         for record in records_to_delete:
             await db.delete_record(record.id)
-            # Optionally remove from Redis if needed
     return NormalResponse(code=0, message="删除成功")

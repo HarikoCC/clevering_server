@@ -22,40 +22,47 @@ async def list(uid: int, _: bool = Depends(verify_token)):
     if rds.user_file_list_exist(uid):
         result = rds.get_user_file_list(uid)
     else:
-        result = await db.get_file_list(uid)
+        result = file_dict_list(db.get_file_list(uid))
+
     if result is None:
         return NormalResponse(code=0, message="获取失败", data="该用户无文件")
 
     if not rds.user_file_list_exist(uid):
-        rds.set_user_file_list(uid, file_dict_list(result))
-    return ListResponse(code=0, message="获取成功", data=file_dict_list(result))
+        rds.set_user_file_list(uid, result)
+    return ListResponse(code=0, message="获取成功", data=result)
 
 
 # 根据文件名查询文件列表
-@router.post("/listname")
+@router.get("/listname")
 async def listname(fname: str, _: bool = Depends(verify_token)):
     db = FileModel()
     rds = FileRedisModel()
     if rds.name_file_list_exist(fname):
         result = rds.get_name_file_list(fname)
     else:
-        result = await db.get_file_list_by_name(fname)
+        result = file_dict_list(db.get_file_list_by_name(fname))
+
     if result is None:
         return NormalResponse(code=0, message="获取失败", data="无该名称文件")
 
     if not rds.name_file_list_exist(fname):
-        rds.set_name_file_list(fname, file_dict_list(result))
-    return ListResponse(code=0, message="获取成功", data=file_dict_list(result))
+        rds.set_name_file_list(fname, result)
+    return ListResponse(code=0, message="获取成功", data=result)
 
 
 # 显示所有文件列表
 @router.get("/listall")
 async def listall(_: bool = Depends(verify_token)):
     db = FileModel()
-    result = await db.get_all_file_list()
+    rds = FileRedisModel()
+    if rds.all_file_list_exist():
+        result = rds.get_all_file_list()
+    else:
+        result = all_file_dict_list(db.get_all_file_list())
     if result is None:
-        return NormalResponse(code=0, message="获取失败", data="文件库无文件")
-    return ListResponse(code=0, message="获取成功", data=all_file_dict_list(result))
+        return NormalResponse(code=0, message="获取失败", data="无该名称文件")
+    rds.set_all_file_list(result)
+    return ListResponse(code=0, message="获取成功", data=result)
 
 
 # 创建新文件
@@ -72,14 +79,14 @@ async def create(uid: int, file: UploadFile = File(...), _: bool = Depends(verif
     os.makedirs(os.path.dirname(path), exist_ok=True)
     try:
         with open(path, "wb") as buffer:
-            while chunk := await file.read(1024):
+            while chunk := file.read(1024):
                 buffer.write(chunk)
     except Exception as e:
-        return NormalResponse(code=0, detail="文件上传失败", data=str(e))
+        return NormalResponse(code=0, message="文件上传失败", data=str(e))
 
-    await db.create_file(create_file_dict([uid, file_name, path]))
+    db.create_file(create_file_dict([uid, file_name, path]))
     rds.delete_list_hash()
-    return NormalResponse(code=0, message="文件上传成功")
+    return NormalResponse(code=0, message="文件上传成功", data="文件上传成功")
 
 
 # 删除文件
@@ -90,10 +97,10 @@ async def delete(fid: int, _: bool = Depends(verify_token)):
     if rds.info_exist(fid):
         result = rds.get_info(fid)
     else:
-        result = await db.get_file_info(fid)
+        result = db.get_file_info(fid)
     path = result.file_path
     os.remove(path)
-    await db.delete_file(fid)
+    db.delete_file(fid)
     rds.delete_list_hash()
     rds.delete_info(fid)
     return NormalResponse(code=0, message="文件已删除")
@@ -104,10 +111,7 @@ async def delete(fid: int, _: bool = Depends(verify_token)):
 async def update(fid: int, file: UploadFile = File(...), _: bool = Depends(verify_token)):
     db = FileModel()
     rds = FileRedisModel()
-    if rds.info_exist(fid):
-        result = rds.get_info(fid)
-    else:
-        result = await db.get_file_info(fid)
+    result = db.get_file_info(fid)
     if result is None:
         return NormalResponse(code=0, message="文件更新失败", data="文件不存在")
 
@@ -115,16 +119,20 @@ async def update(fid: int, file: UploadFile = File(...), _: bool = Depends(verif
     os.remove(path)
     try:
         with open(path, "wb") as buffer:
-            while chunk := await file.read(1024):
+            while chunk := file.read(1024):
                 buffer.write(chunk)
     except Exception as e:
         return NormalResponse(code=0, message="文件更新失败", data=str(e))
-    await db.update_file(fid, datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+    db.update_file(fid, datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
     rds.delete_info(fid)
 
-    result = await db.get_file_info(fid)
+    """
+    result = db.get_file_info(fid)
     if not rds.info_exist(fid):
         rds.set_info(fid, result)
+    """
+    rds.delete_list_hash()
+    rds.delete_info(fid)
     return NormalResponse(code=0, message="文件更新成功")
 
 
@@ -136,7 +144,7 @@ async def download(fid: int, _: bool = Depends(verify_token)):
     if rds.info_exist(fid):
         result = rds.get_info(fid)
     else:
-        result = await db.get_file_info(fid)
+        result = db.get_file_info(fid)
     if result is None:
         return NormalResponse(code=0, message="文件下载失败", data="文件不存在")
     if not rds.info_exist(fid):

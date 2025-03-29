@@ -10,8 +10,8 @@ def create_file_dict(data: any):
         "file_name": data.file_name,
         "user_id": data.uid,
         "file_path": data.path,
-        "create_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "modify_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        "create_time": str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+        "modify_time": str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     }
     return data_dict
 
@@ -21,7 +21,7 @@ def file_dict_list(data_list: list[FileInformation]):
         {
             "file_id": data.file_id,
             "file_name": data.file_name,
-            "create_time": data.create_time
+            "create_time": str(data.create_time)
         }
         for data in data_list
     ]
@@ -34,7 +34,7 @@ def all_file_dict_list(data_list: any):
             "file_id": data.file_id,
             "file_name": data.file_name,
             "user_name": data.user_name,
-            "create_time": data.create_time
+            "create_time": str(data.create_time)
         }
         for data in data_list
     ]

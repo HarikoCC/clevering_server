@@ -16,10 +16,10 @@ router = APIRouter(
 @router.post("/signup")
 async def signup(data: UserInfo):
     db = UserModel()
-    result = await db.get_info_by_id(data.user_id)
+    result = db.get_info_by_id(data.user_id)
     if result is not None:
         return NormalResponse(code=0, message="用户注册失败", data="用户ID已存在")
-    await db.user_sign_up(user_info_dict(data))
+    db.user_sign_up(user_info_dict(data))
     return NormalResponse(code=0, message="用户注册成功", data="用户注册成功")
 
 
@@ -29,9 +29,9 @@ async def signin(data: UserSignIn):
     db = UserModel()
     rds = UserRedisModel()
     if data.sign_in_mode == 0:
-        result = await db.get_info_by_id(data.user_info)
+        result = db.get_info_by_id(data.user_info)
     else:
-        result = await db.get_info_by_phone(data.user_info)
+        result = db.get_info_by_phone(data.user_info)
     if result is None:
         return NormalResponse(code=0, message="用户登录失败", data="用户不存在")
     if result.user_password != data.user_password:
@@ -48,7 +48,7 @@ async def signin(data: UserSignIn):
 @router.get("/info")
 async def info(uid: int, _: bool = Depends(verify_token)):
     db = UserModel()
-    result = await db.get_info_by_id(uid)
+    result = db.get_info_by_id(uid)
     if result is None:
         return NormalResponse(code=0, message="信息获取失败", data="用户不存在")
     else:
@@ -59,10 +59,10 @@ async def info(uid: int, _: bool = Depends(verify_token)):
 @router.post("/update")
 async def update(data: UserInfo, _: bool = Depends(verify_token)):
     db = UserModel()
-    result = await db.get_info_by_id(data.user_id)
+    result = db.get_info_by_id(data.user_id)
     if result is not None:
         return NormalResponse(code=0, message="用户修改失败", data="用户不存在")
-    await db.update_info(user_info_dict(data))
+    db.update_info(user_info_dict(data))
     return NormalResponse(code=0, message="用户修改成功")
 
 
@@ -71,11 +71,11 @@ async def update(data: UserInfo, _: bool = Depends(verify_token)):
 async def delete(data: UserDelete, _: bool = Depends(verify_token)):
     db = UserModel()
     rds = UserRedisModel()
-    result = await db.get_info_by_id(data.user_id)
+    result = db.get_info_by_id(data.user_id)
     rds.delete_token(data.user_id)
     if result is None:
         return NormalResponse(code=0, message="用户删除失败", data="用户不存在")
     if result.user_password == data.user_password:
-        await db.delete_by_id(data.uid)
+        db.delete_by_id(data.uid)
         return NormalResponse(code=0, message="用户删除成功")
     

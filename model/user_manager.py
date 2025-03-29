@@ -1,12 +1,7 @@
-import json
-
-from fastapi import Header
-from sqlalchemy import inspect
-
 from db import DbSession, UserInformation
 from rds import RedisSession
 
-token_life_time = 10800
+LIFE_TIME = 10800
 
 
 class UserModel(DbSession):
@@ -38,6 +33,10 @@ class UserModel(DbSession):
 
 class UserRedisModel(RedisSession):
 
+    def user_exist(self, uid: int):
+        tid = "user:" + str(uid)
+        return self.rds.exists(tid)
+
     def get_token(self, uid: int):
         tid = "user:" + str(uid)
         result = self.rds.get(tid)
@@ -45,8 +44,7 @@ class UserRedisModel(RedisSession):
 
     def set_token(self, uid: int, token: str):
         tid = "user:" + str(uid)
-        self.rds.hset(tid, token)
-        self.rds.setex(tid, token_life_time)
+        self.rds.setex(tid, LIFE_TIME, token)
 
     def delete_token(self, uid: int):
         tid = "user:" + str(uid)

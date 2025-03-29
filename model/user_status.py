@@ -26,7 +26,7 @@ class UserStatusModel(DbSession):
         self.session.commit()
 
     def get_record(self, uid: int):
-        result = self.session.query(StatusRecord).filter(StatusRecord.user_id == uid).first()
+        result = self.session.query(StatusRecord).filter(StatusRecord.user_id == uid)
         return result
 
     def get_record_by_time(self, data: dict):

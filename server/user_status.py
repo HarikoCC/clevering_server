@@ -19,7 +19,7 @@ async def update(data: UserStatus, _: bool = Depends(verify_token)):
     rds = UserStatusRedisModel()
 
     result = rds.status_exist(data.user_id)
-    await db.add_record(user_status_dict(data))
+    db.add_record(user_status_dict(data))
     rds.set_status(data.user_id, user_status_dict(data))
 
     if result is None:
@@ -35,7 +35,7 @@ async def status(uid: int, _: bool = Depends(verify_token)):
 
     if result is None:
         return NormalResponse(code=0, message="查询失败", data="无该用户最新信息")
-    return NormalResponse(code=0, message="查询成功", data=user_status_dict(result))
+    return NormalResponse(code=0, message="查询成功", data=str(result))
 
 
 # 根据id获取用户日志
@@ -43,9 +43,9 @@ async def status(uid: int, _: bool = Depends(verify_token)):
 async def record(data: FindRecord, _: bool = Depends(verify_token)):
     db = UserStatusModel()
     if data.mode == 0:
-        result = await db.get_record(data.user_id)
+        result = db.get_record(data.user_id)
     else:
-        result = await db.get_record_by_time(record_time_dict(data))
+        result = db.get_record_by_time(record_time_dict(data))
 
     if result is None:
         return NormalResponse(code=0, message="获取失败", data="无该用户信息")
@@ -59,10 +59,10 @@ async def delete(data: FindRecord, _: bool = Depends(verify_token)):
     db = UserStatusModel()
     rds = UserStatusRedisModel()
     if data.mode == 0:
-        await db.delete_record(data.user_id)
+        db.delete_record(data.user_id)
         rds.rds.hdel("user_status", str(data.user_id))
     else:
-        records_to_delete = await db.get_record_by_time(record_time_dict(data))
+        records_to_delete = db.get_record_by_time(record_time_dict(data))
         for record in records_to_delete:
-            await db.delete_record(record.id)
-    return NormalResponse(code=0, message="删除成功")
+            db.delete_record(record.id)
+    return NormalResponse(code=0, message="删除成功", data="删除成功")

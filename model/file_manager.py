@@ -1,23 +1,21 @@
 import datetime
 import json
 
-from db import DbSession, FileInformation
+from db import DbSession, FileInformation, UserInformation
 from rds import RedisSession
-from serializer.user_manager import UserInfo
-
 
 class FileModel(DbSession):
 
     def get_file_list(self, uid: int):
-        result = self.session.query(FileInformation).filter(FileInformation.user_id == uid)
+        result = self.session.query(*FileInformation.__table__.columns,  *UserInformation.__table__.columns).filter(FileInformation.user_id == uid)
         return result
 
     def get_all_file_list(self):
-        result = self.session.query(FileInformation).join(UserInfo, FileInformation.user_id == UserInfo.id)
+        result = self.session.query(*FileInformation.__table__.columns,  *UserInformation.__table__.columns).join(UserInformation, FileInformation.user_id == UserInformation.user_id)
         return result
 
     def get_file_list_by_name(self, fname: str):
-        result = self.session.query(FileInformation).join(UserInfo, FileInformation.user_id == fname)
+        result = self.session.query(*FileInformation.__table__.columns,  *UserInformation.__table__.columns).join(UserInformation, FileInformation.user_id == fname)
         return result
 
     def get_file_info(self, fid: int):
@@ -58,6 +56,19 @@ class FileRedisModel(RedisSession):
     def delete_user_file_list(self, uid: int):
         self.rds.hdel("user_file", str(uid))
 
+    def all_file_list_exist(self):
+        return self.rds.exists("all_file")
+
+    def get_all_file_list(self):
+        return self.rds.get("all_file")
+
+    def set_all_file_list(self, file_list: list):
+        self.rds.set("all_file", json.dumps(file_list))
+
+    def delete_all_file_list(self):
+        self.rds.hdel("all_file")
+        self.rds.delete("all_file")
+
     def name_file_list_exist(self, name: str):
         return self.rds.hexists("name_file", name)
 
@@ -72,7 +83,7 @@ class FileRedisModel(RedisSession):
         self.rds.hdel("name_file", name)
 
     def delete_list_hash(self):
-        self.rds.delete("user_file", "name_file")
+        self.rds.delete("user_file", "name_file", "all_file")
 
     def info_exist(self, fid: int):
         return self.rds.hexists("fid", str(fid))

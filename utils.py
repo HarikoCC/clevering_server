@@ -27,10 +27,9 @@ def check_system():
 
 async def verify_token(uid: int, token: str):
     rds = UserRedisModel()
-    if rds.exist_user(uid):
+    if rds.user_exist(uid):
         result = rds.get_token(uid)
     else:
         return NormalResponse(code=0, message="访问被拒绝", data="请先登录")
-
     if result is not token:
         return NormalResponse(code=0, message="访问被拒绝", data="请先登录")

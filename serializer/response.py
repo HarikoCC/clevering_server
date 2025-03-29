@@ -15,5 +15,5 @@ class DictResponse(BaseModel):
 
 class ListResponse(BaseModel):
     code: int
-    message: int
+    message: str
     data: list[dict]

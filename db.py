@@ -1,4 +1,4 @@
-from sqlalchemy import Column, create_engine, DATETIME, BIGINT, Integer as INTEGER, String as TEXT, TEXT
+from sqlalchemy import Column, create_engine, TEXT, BIGINT, Integer as INTEGER, String as TEXT, TEXT
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import sessionmaker, declarative_base
 
@@ -23,7 +23,7 @@ class UserReport(Base):
     report_id = Column(BIGINT, primary_key=True, nullable=False, index=True)
     user_id = Column(BIGINT, primary_key=False, nullable=False, index=True)
     report_path = Column(TEXT, primary_key=False, nullable=False)
-    create_time = Column(DATETIME, primary_key=False, nullable=False)
+    create_time = Column(TEXT, primary_key=False, nullable=False)
 
 
 # 设备绑定表
@@ -43,7 +43,7 @@ class UserStatus(Base):
     hrv = Column(INTEGER, primary_key=False, nullable=True)
     blood_oxygen = Column(INTEGER, primary_key=False, nullable=True)
     concentration = Column(INTEGER, primary_key=False, nullable=True)
-    timestamp = Column(DATETIME, primary_key=False, nullable=True)
+    timestamp = Column(TEXT, primary_key=False, nullable=True)
 
 
 # 用户状态日志表
@@ -55,7 +55,7 @@ class StatusRecord(Base):
     hrv = Column(INTEGER, primary_key=False, nullable=True)
     blood_oxygen = Column(INTEGER, primary_key=False, nullable=True)
     concentration = Column(INTEGER, primary_key=False, nullable=True)
-    timestamp = Column(DATETIME, primary_key=False, nullable=False)
+    timestamp = Column(TEXT, primary_key=False, nullable=False)
 
 
 # 文件信息表
@@ -63,10 +63,10 @@ class FileInformation(Base):
     __tablename__ = 'file_info'
     file_id = Column(INTEGER, primary_key=True, nullable=False, autoincrement=True)
     file_name = Column(TEXT, primary_key=False, nullable=False)
-    user_id = Column(BIGINT, primary_key=True, nullable=False)
+    user_id = Column(BIGINT, primary_key=False, nullable=False)
     file_path = Column(TEXT, primary_key=False, nullable=False)
-    create_time = Column(DATETIME, primary_key=False, nullable=False)
-    modify_time = Column(DATETIME, primary_key=False, nullable=False)
+    create_time = Column(TEXT, primary_key=False, nullable=False)
+    modify_time = Column(TEXT, primary_key=False, nullable=False)
 
 
 # 用户组表
@@ -105,13 +105,10 @@ def init_db():
 
 
 class DbSession:
-        def __init__(self):
-            self.engine = create_async_engine(sqlLink)
-            self.session = async_sessionmaker(
-                bind=self.engine,
-                class_=AsyncSession,
-                expire_on_commit=False
-            )
+    def __init__(self):
+        engine = create_engine(sqlLink)
+        DBSession = sessionmaker(bind=engine)
+        self.session = DBSession()
 
         async def get_session(self) -> AsyncSession:
             return self.session()
